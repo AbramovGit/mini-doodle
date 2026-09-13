@@ -65,3 +65,9 @@ curl -X POST http://localhost:8080/api/users/USER_ID/slots/SLOT_ID/meeting \
   -H "Content-Type: application/json" \
   -d '{"title":"Planning","description":"Weekly planning","participantIds":["USER_ID"]}'
 ```
+
+Aggregated availability is available for a user and time range:
+
+```bash
+curl "http://localhost:8080/api/users/USER_ID/availability?from=2026-09-14T00:00:00Z&to=2026-09-15T00:00:00Z"
+```

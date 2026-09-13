@@ -17,6 +17,7 @@ public interface SlotRepository extends JpaRepository<Slot, Long> {
             where s.calendar.id = :calendarId
               and s.startTime < :to
               and s.endTime > :from
+            order by s.startTime asc
             """)
     Page<Slot> findOverlapping(@Param("calendarId") Long calendarId,
                                @Param("from") Instant from,
@@ -29,6 +30,7 @@ public interface SlotRepository extends JpaRepository<Slot, Long> {
               and s.status = :status
               and s.startTime < :to
               and s.endTime > :from
+            order by s.startTime asc
             """)
     Page<Slot> findOverlappingByStatus(@Param("calendarId") Long calendarId,
                                        @Param("status") SlotStatus status,
