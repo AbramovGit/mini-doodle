@@ -1,0 +1,9 @@
+spring:
+  flyway:
+    locations: classpath:db/migration/common
+
+app:
+  availability:
+    database-aggregation: false
+  slot:
+    minimum-duration: PT15M

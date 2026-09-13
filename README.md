@@ -96,13 +96,23 @@ resource or path segment.
   can only become free again when its meeting is cancelled.
 - Slot overlap and minimum-duration validation are enforced in the service
   layer. `Slot` uses optimistic locking so concurrent booking attempts return
-  `409 Conflict` for the losing request.
+  `409 Conflict` for the losing request. The slot state change, meeting, and
+  participants are persisted in one transaction.
 - Docker Compose uses PostgreSQL with a named volume and waits for its health
-  check before starting the application. Flyway manages the schema.
+  check before starting the application. Flyway manages the schema and adds a
+  PostgreSQL exclusion constraint that prevents overlapping slot ranges within
+  a calendar, including concurrent writes.
 - Swagger UI runs as a separate deployable and is configured through
   `SWAGGER_OPENAPI_URL`. CORS permits its configured origin through
   `SWAGGER_UI_ORIGIN`.
 - H2 is retained only for local test runs.
+- User and availability reads use bounded in-process Caffeine caches. Entries
+  expire after five minutes, and availability is invalidated after slot or
+  meeting changes; a distributed cache is required before running multiple app
+  instances.
+- PostgreSQL aggregates and paginates availability windows in the database.
+  H2 test runs retain the equivalent Java aggregation because PostgreSQL window
+  and range functions are not portable.
 - The availability endpoint aggregates the full requested range before
   paginating result windows. Ranges outside a user's declared free slots are
   returned as `BUSY`, and adjacent windows with the same status are merged.

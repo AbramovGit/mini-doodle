@@ -88,7 +88,7 @@ public class SlotService {
         if (request.status() != null) {
             slot.setStatus(request.status());
         }
-        return toResponse(slotRepository.save(slot));
+        return toResponse(slotRepository.saveAndFlush(slot));
     }
 
     @Transactional
