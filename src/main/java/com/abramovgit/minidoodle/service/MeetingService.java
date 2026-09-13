@@ -17,6 +17,7 @@ import com.abramovgit.minidoodle.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.OptimisticLockingFailureException;
 import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,7 @@ public class MeetingService {
     private final MeterRegistry meterRegistry;
 
     @Transactional
+    @CacheEvict(cacheNames = "availability", allEntries = true)
     public MeetingResponse book(Long organizerId, Long slotId, MeetingCreateRequest request) {
         User organizer = getUser(organizerId);
         Slot slot = slotRepository.findById(slotId)
@@ -91,6 +93,7 @@ public class MeetingService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = "availability", allEntries = true)
     public void cancel(Long meetingId) {
         Meeting meeting = getMeeting(meetingId);
         Slot slot = meeting.getSlot();

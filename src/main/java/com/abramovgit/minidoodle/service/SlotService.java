@@ -14,6 +14,7 @@ import com.abramovgit.minidoodle.repository.CalendarRepository;
 import com.abramovgit.minidoodle.repository.SlotRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ public class SlotService {
     private Duration minimumDuration;
 
     @Transactional
+    @CacheEvict(cacheNames = "availability", allEntries = true)
     public List<SlotResponse> create(Long userId, CreateSlotsRequest request) {
         Calendar calendar = getCalendarForUpdate(userId);
         List<Slot> newSlots = new ArrayList<>();
@@ -68,6 +70,7 @@ public class SlotService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = "availability", allEntries = true)
     public SlotResponse update(Long userId, Long slotId, UpdateSlotRequest request) {
         Calendar calendar = getCalendarForUpdate(userId);
         Slot slot = getUserSlot(userId, slotId);
@@ -89,6 +92,7 @@ public class SlotService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = "availability", allEntries = true)
     public void delete(Long userId, Long slotId) {
         Slot slot = getUserSlot(userId, slotId);
         if (slot.getStatus() == SlotStatus.BUSY) {

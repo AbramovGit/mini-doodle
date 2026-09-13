@@ -8,6 +8,7 @@ import com.abramovgit.minidoodle.exception.ConflictException;
 import com.abramovgit.minidoodle.exception.ResourceNotFoundException;
 import com.abramovgit.minidoodle.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +40,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "users", key = "#userId")
     public UserResponse get(Long userId) {
         return userRepository.findById(userId)
                 .map(this::toResponse)

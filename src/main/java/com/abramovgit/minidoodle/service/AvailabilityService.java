@@ -10,6 +10,7 @@ import com.abramovgit.minidoodle.repository.SlotRepository;
 import com.abramovgit.minidoodle.exception.InvalidSlotException;
 import com.abramovgit.minidoodle.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class AvailabilityService {
     private final SlotRepository slotRepository;
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "availability")
     public AvailabilityResponse get(Long userId, Instant from, Instant to, Pageable pageable) {
         Calendar calendar = calendarRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
