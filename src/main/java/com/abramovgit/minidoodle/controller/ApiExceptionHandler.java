@@ -3,7 +3,9 @@ package com.abramovgit.minidoodle.controller;
 import com.abramovgit.minidoodle.api.ApiError;
 import com.abramovgit.minidoodle.exception.ConflictException;
 import com.abramovgit.minidoodle.exception.InvalidSlotException;
+import com.abramovgit.minidoodle.exception.InvalidMeetingException;
 import com.abramovgit.minidoodle.exception.ResourceNotFoundException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -25,7 +27,13 @@ public class ApiExceptionHandler {
         return error(HttpStatus.CONFLICT, exception.getMessage());
     }
 
-    @ExceptionHandler({InvalidSlotException.class, MethodArgumentNotValidException.class})
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<ApiError> handleOptimisticLock(OptimisticLockingFailureException exception) {
+        return error(HttpStatus.CONFLICT, "The resource was modified by another request");
+    }
+
+    @ExceptionHandler({InvalidSlotException.class, InvalidMeetingException.class,
+            MethodArgumentNotValidException.class})
     public ResponseEntity<ApiError> handleBadRequest(Exception exception) {
         String message = exception instanceof MethodArgumentNotValidException validationException
                 ? validationException.getBindingResult().getAllErrors().getFirst().getDefaultMessage()

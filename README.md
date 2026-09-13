@@ -57,3 +57,11 @@ curl -X POST http://localhost:8080/api/users/USER_ID/slots \
 
 curl "http://localhost:8080/api/users/USER_ID/slots?from=2026-09-14T00:00:00Z&to=2026-09-15T00:00:00Z"
 ```
+
+Meetings are booked from a free slot and automatically mark it busy:
+
+```bash
+curl -X POST http://localhost:8080/api/users/USER_ID/slots/SLOT_ID/meeting \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Planning","description":"Weekly planning","participantIds":["USER_ID"]}'
+```
