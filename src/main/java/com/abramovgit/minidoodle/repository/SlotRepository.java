@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.List;
 
 public interface SlotRepository extends JpaRepository<Slot, Long> {
 
@@ -23,6 +24,17 @@ public interface SlotRepository extends JpaRepository<Slot, Long> {
                                @Param("from") Instant from,
                                @Param("to") Instant to,
                                Pageable pageable);
+
+    @Query("""
+            select s from Slot s
+            where s.calendar.id = :calendarId
+              and s.startTime < :to
+              and s.endTime > :from
+            order by s.startTime asc
+            """)
+    List<Slot> findAllOverlapping(@Param("calendarId") Long calendarId,
+                                  @Param("from") Instant from,
+                                  @Param("to") Instant to);
 
     @Query("""
             select s from Slot s

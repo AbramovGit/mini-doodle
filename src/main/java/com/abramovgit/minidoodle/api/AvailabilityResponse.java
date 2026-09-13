@@ -6,6 +6,7 @@ public record AvailabilityResponse(
         List<AvailabilityWindow> windows,
         int page,
         int size,
-        long totalSlots
+        long totalSlots,
+        long totalWindows
 ) {
 }
