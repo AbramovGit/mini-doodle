@@ -1,0 +1,6 @@
+.git
+.idea
+target
+*.iml
+AGENTS.md
+README.md
