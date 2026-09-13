@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -110,5 +111,21 @@ class MeetingControllerIntegrationTest extends AbstractControllerIntegrationTest
 
         assertThat(error.get("status").asInt()).isEqualTo(400);
         assertThat(error.get("message").asText()).isEqualTo("participantIds must not contain duplicates");
+    }
+
+    @Test
+    void rejectsMeetingWithTooManyParticipants() throws Exception {
+        long organizerId = createUser("Participant Limit", "participant-limit@example.com", "UTC");
+        long slotId = createSlots(organizerId,
+                slot(Instant.parse("2026-09-17T15:00:00Z"), Instant.parse("2026-09-17T16:00:00Z"))).getFirst();
+
+        JsonNode error = readJson(mockMvc.perform(post("/api/users/{userId}/slots/{slotId}/meeting", organizerId, slotId)
+                        .contentType(APPLICATION_JSON)
+                        .content(json(new MeetingCreateRequest("Too Many Participants", null,
+                                Collections.nCopies(51, organizerId)))))
+                .andExpect(status().isBadRequest())
+                .andReturn());
+
+        assertThat(error.get("message").asText()).contains("50");
     }
 }

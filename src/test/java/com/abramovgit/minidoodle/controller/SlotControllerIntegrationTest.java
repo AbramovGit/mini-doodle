@@ -2,11 +2,13 @@ package com.abramovgit.minidoodle.controller;
 
 import com.abramovgit.minidoodle.api.CreateSlotsRequest;
 import com.abramovgit.minidoodle.api.MeetingCreateRequest;
+import com.abramovgit.minidoodle.api.SlotRequest;
 import com.abramovgit.minidoodle.api.UpdateSlotRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,6 +107,36 @@ class SlotControllerIntegrationTest extends AbstractControllerIntegrationTest {
 
         assertThat(error.get("status").asInt()).isEqualTo(400);
         assertThat(error.get("message").asText()).isEqualTo("Slot duration must be at least PT15M");
+    }
+
+    @Test
+    void rejectsBulkSlotCreationAboveConfiguredLimit() throws Exception {
+        long userId = createUser("Bulk Slots", "bulk-slots@example.com", "UTC");
+        SlotRequest validSlot = slot(Instant.parse("2026-09-16T09:00:00Z"),
+                Instant.parse("2026-09-16T10:00:00Z"));
+
+        JsonNode error = readJson(mockMvc.perform(post("/api/users/{userId}/slots", userId)
+                        .contentType(APPLICATION_JSON)
+                        .content(json(new CreateSlotsRequest(Collections.nCopies(101, validSlot)))))
+                .andExpect(status().isBadRequest())
+                .andReturn());
+
+        assertThat(error.get("message").asText()).contains("100");
+    }
+
+    @Test
+    void capsSlotListPageSize() throws Exception {
+        long userId = createUser("Page Size", "page-size@example.com", "UTC");
+
+        JsonNode page = readJson(mockMvc.perform(get("/api/users/{userId}/slots", userId)
+                        .param("from", "2026-09-16T08:00:00Z")
+                        .param("to", "2026-09-16T13:00:00Z")
+                        .param("page", "0")
+                        .param("size", "101"))
+                .andExpect(status().isOk())
+                .andReturn());
+
+        assertThat(page.get("size").asInt()).isEqualTo(100);
     }
 
     @Test

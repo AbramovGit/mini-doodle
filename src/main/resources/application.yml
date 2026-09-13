@@ -5,10 +5,23 @@ spring:
     url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:minidoodle;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
     username: ${SPRING_DATASOURCE_USERNAME:sa}
     password: ${SPRING_DATASOURCE_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${APP_DATASOURCE_MAXIMUM_POOL_SIZE:20}
+      minimum-idle: ${APP_DATASOURCE_MINIMUM_IDLE:5}
+      connection-timeout: ${APP_DATASOURCE_CONNECTION_TIMEOUT_MS:3000}
+      validation-timeout: ${APP_DATASOURCE_VALIDATION_TIMEOUT_MS:1000}
+      idle-timeout: ${APP_DATASOURCE_IDLE_TIMEOUT_MS:600000}
+      max-lifetime: ${APP_DATASOURCE_MAX_LIFETIME_MS:1800000}
   jpa:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+    properties:
+      jakarta.persistence.query.timeout: ${APP_DATABASE_QUERY_TIMEOUT_MS:5000}
+  data:
+    web:
+      pageable:
+        max-page-size: ${APP_MAX_PAGE_SIZE:100}
   flyway:
     enabled: true
     locations: classpath:db/migration/common

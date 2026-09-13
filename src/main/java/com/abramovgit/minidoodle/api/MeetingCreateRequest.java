@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
@@ -14,6 +15,6 @@ public record MeetingCreateRequest(
         @Schema(description = "Optional meeting description.", example = "Plan the next sprint.")
         String description,
         @Schema(description = "Non-empty list of registered user IDs without duplicates.", example = "[1,2]")
-        @NotEmpty List<@NotNull Long> participantIds
+        @NotEmpty @Size(max = 50) List<@NotNull Long> participantIds
 ) {
 }
