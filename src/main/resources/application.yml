@@ -7,10 +7,10 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:}
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     open-in-view: false
   flyway:
-    enabled: false
+    enabled: true
   h2:
     console:
       enabled: true
