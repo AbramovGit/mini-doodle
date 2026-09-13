@@ -11,6 +11,7 @@ spring:
     open-in-view: false
   flyway:
     enabled: true
+    locations: classpath:db/migration/common
   h2:
     console:
       enabled: false
