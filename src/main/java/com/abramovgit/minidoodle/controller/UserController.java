@@ -4,6 +4,8 @@ import com.abramovgit.minidoodle.api.UserCreateRequest;
 import com.abramovgit.minidoodle.api.UserResponse;
 import com.abramovgit.minidoodle.service.UserService;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,11 +21,13 @@ import java.net.URI;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Tag(name = "Users", description = "User and implicit calendar management")
 public class UserController {
 
     private final UserService userService;
 
     @PostMapping
+    @Operation(summary = "Create a user and their implicit calendar")
     public ResponseEntity<UserResponse> create(@Valid @RequestBody UserCreateRequest request,
                                                UriComponentsBuilder uriBuilder) {
         UserResponse response = userService.create(request);
@@ -32,6 +36,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
+    @Operation(summary = "Get a user")
     public UserResponse get(@PathVariable Long userId) {
         return userService.get(userId);
     }

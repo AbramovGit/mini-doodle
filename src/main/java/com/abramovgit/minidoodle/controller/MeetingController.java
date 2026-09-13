@@ -5,6 +5,8 @@ import com.abramovgit.minidoodle.api.MeetingResponse;
 import com.abramovgit.minidoodle.api.MeetingUpdateRequest;
 import com.abramovgit.minidoodle.service.MeetingService;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,11 +24,13 @@ import java.net.URI;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Tag(name = "Meetings", description = "Meeting booking and cancellation")
 public class MeetingController {
 
     private final MeetingService meetingService;
 
     @PostMapping("/users/{userId}/slots/{slotId}/meeting")
+    @Operation(summary = "Book a free slot into a meeting")
     public ResponseEntity<MeetingResponse> book(@PathVariable Long userId,
                                                 @PathVariable Long slotId,
                                                 @Valid @RequestBody MeetingCreateRequest request,
@@ -37,17 +41,20 @@ public class MeetingController {
     }
 
     @GetMapping("/meetings/{meetingId}")
+    @Operation(summary = "Get a meeting")
     public MeetingResponse get(@PathVariable Long meetingId) {
         return meetingService.get(meetingId);
     }
 
     @PatchMapping("/meetings/{meetingId}")
+    @Operation(summary = "Update meeting details")
     public MeetingResponse update(@PathVariable Long meetingId,
                                   @Valid @RequestBody MeetingUpdateRequest request) {
         return meetingService.update(meetingId, request);
     }
 
     @DeleteMapping("/meetings/{meetingId}")
+    @Operation(summary = "Cancel a meeting and free its slot")
     public ResponseEntity<Void> cancel(@PathVariable Long meetingId) {
         meetingService.cancel(meetingId);
         return ResponseEntity.noContent().build();

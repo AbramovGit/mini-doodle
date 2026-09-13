@@ -16,6 +16,7 @@ import com.abramovgit.minidoodle.repository.SlotRepository;
 import com.abramovgit.minidoodle.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.OptimisticLockingFailureException;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,7 @@ public class MeetingService {
     private final MeetingRepository meetingRepository;
     private final SlotRepository slotRepository;
     private final UserRepository userRepository;
+    private final MeterRegistry meterRegistry;
 
     @Transactional
     public MeetingResponse book(Long organizerId, Long slotId, MeetingCreateRequest request) {
@@ -61,7 +63,9 @@ public class MeetingService {
             participant.setUser(participantUser);
             meeting.getParticipants().add(participant);
         }
-        return toResponse(meetingRepository.save(meeting));
+        Meeting savedMeeting = meetingRepository.save(meeting);
+        meterRegistry.counter("mini_doodle_meetings_booked").increment();
+        return toResponse(savedMeeting);
     }
 
     @Transactional(readOnly = true)
@@ -93,6 +97,7 @@ public class MeetingService {
         slot.setStatus(SlotStatus.FREE);
         meetingRepository.delete(meeting);
         slotRepository.save(slot);
+        meterRegistry.counter("mini_doodle_meetings_cancelled").increment();
     }
 
     private User getUser(Long userId) {

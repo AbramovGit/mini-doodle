@@ -40,9 +40,9 @@ Start the application with:
 docker compose up --build
 ```
 
-The service is available at `http://localhost:8080`. At this scaffold stage,
-health and metrics are exposed at `/actuator/health` and
-`/actuator/prometheus`; business endpoints will be added in later milestones.
+The service is available at `http://localhost:8080`. Health, metrics, and
+interactive API documentation are exposed at `/actuator/health`,
+`/actuator/prometheus`, and `/swagger-ui.html`.
 
 The user and slot APIs are now available:
 
