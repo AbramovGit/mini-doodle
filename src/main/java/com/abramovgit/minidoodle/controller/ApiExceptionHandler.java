@@ -5,6 +5,7 @@ import com.abramovgit.minidoodle.exception.ConflictException;
 import com.abramovgit.minidoodle.exception.InvalidSlotException;
 import com.abramovgit.minidoodle.exception.InvalidMeetingException;
 import com.abramovgit.minidoodle.exception.ResourceNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,11 @@ public class ApiExceptionHandler {
     @ExceptionHandler(OptimisticLockingFailureException.class)
     public ResponseEntity<ApiError> handleOptimisticLock(OptimisticLockingFailureException exception) {
         return error(HttpStatus.CONFLICT, "The resource was modified by another request");
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleDataIntegrityConflict(DataIntegrityViolationException exception) {
+        return error(HttpStatus.CONFLICT, "The request conflicts with existing data");
     }
 
     @ExceptionHandler({InvalidSlotException.class, InvalidMeetingException.class,

@@ -36,7 +36,7 @@ public class SlotService {
 
     @Transactional
     public List<SlotResponse> create(Long userId, CreateSlotsRequest request) {
-        Calendar calendar = getCalendar(userId);
+        Calendar calendar = getCalendarForUpdate(userId);
         List<Slot> newSlots = new ArrayList<>();
 
         for (SlotRequest slotRequest : request.slots()) {
@@ -69,11 +69,12 @@ public class SlotService {
 
     @Transactional
     public SlotResponse update(Long userId, Long slotId, UpdateSlotRequest request) {
+        Calendar calendar = getCalendarForUpdate(userId);
         Slot slot = getUserSlot(userId, slotId);
         Instant startTime = request.startTime() == null ? slot.getStartTime() : request.startTime();
         Instant endTime = request.endTime() == null ? slot.getEndTime() : request.endTime();
         validateTimeRange(startTime, endTime);
-        ensureNoOverlap(slot.getCalendar().getId(), startTime, endTime, slotId, List.of());
+        ensureNoOverlap(calendar.getId(), startTime, endTime, slotId, List.of());
 
         if (request.status() != null && request.status() != slot.getStatus()) {
             throw new ConflictException("Slot status changes must be performed by the booking service");
@@ -98,6 +99,11 @@ public class SlotService {
 
     private Calendar getCalendar(Long userId) {
         return calendarRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+    }
+
+    private Calendar getCalendarForUpdate(Long userId) {
+        return calendarRepository.findByUserIdForUpdate(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
     }
 

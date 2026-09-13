@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Locale;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -19,13 +21,14 @@ public class UserService {
 
     @Transactional
     public UserResponse create(UserCreateRequest request) {
-        if (userRepository.existsByEmailIgnoreCase(request.email())) {
+        String email = request.email().trim().toLowerCase(Locale.ROOT);
+        if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new ConflictException("A user with this email already exists");
         }
 
         User user = new User();
         user.setName(request.name());
-        user.setEmail(request.email());
+        user.setEmail(email);
         user.setTimezone(request.timezone());
 
         Calendar calendar = new Calendar();

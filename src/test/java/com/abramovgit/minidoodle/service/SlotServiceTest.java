@@ -48,6 +48,7 @@ class SlotServiceTest {
         calendar = new Calendar();
         calendar.setId(1L);
         when(calendarRepository.findByUserId(1L)).thenReturn(Optional.of(calendar));
+        when(calendarRepository.findByUserIdForUpdate(1L)).thenReturn(Optional.of(calendar));
     }
 
     @Test
