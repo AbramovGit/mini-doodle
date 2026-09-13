@@ -26,7 +26,9 @@ public class AvailabilityController {
     private final AvailabilityService availabilityService;
 
     @GetMapping
-    @Operation(summary = "Get aggregated availability for a user and time range")
+    @Operation(summary = "Get aggregated availability for a user and time range",
+            description = "Returns merged FREE and BUSY windows clipped to the requested UTC range. "
+                    + "Time outside declared FREE slots is BUSY. Pagination applies after windows are aggregated.")
     public AvailabilityResponse get(@PathVariable Long userId,
                                     @RequestParam Instant from,
                                     @RequestParam Instant to,

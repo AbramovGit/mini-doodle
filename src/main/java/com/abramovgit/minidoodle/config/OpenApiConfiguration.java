@@ -14,6 +14,11 @@ public class OpenApiConfiguration {
                 .info(new Info()
                         .title("Mini Doodle API")
                         .version("v1")
-                        .description("Meeting scheduling API for users, slots, meetings, and availability."));
+                        .description("""
+                                Create a user, declare FREE slots, then book a slot as a meeting.
+                                Booking changes its slot to BUSY; cancelling the meeting returns it to FREE.
+                                All timestamps use UTC ISO-8601 format. Availability treats time outside
+                                declared FREE slots as BUSY. Pagination is zero-based.
+                                """));
     }
 }

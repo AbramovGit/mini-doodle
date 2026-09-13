@@ -30,7 +30,9 @@ public class MeetingController {
     private final MeetingService meetingService;
 
     @PostMapping("/users/{userId}/slots/{slotId}/meeting")
-    @Operation(summary = "Book a free slot into a meeting")
+    @Operation(summary = "Book a free slot into a meeting",
+            description = "The slot must belong to the user and be FREE. Booking creates exactly one meeting, "
+                    + "marks the slot BUSY, and requires non-empty registered participant IDs.")
     public ResponseEntity<MeetingResponse> book(@PathVariable Long userId,
                                                 @PathVariable Long slotId,
                                                 @Valid @RequestBody MeetingCreateRequest request,
@@ -41,20 +43,22 @@ public class MeetingController {
     }
 
     @GetMapping("/meetings/{meetingId}")
-    @Operation(summary = "Get a meeting")
+    @Operation(summary = "Get a meeting", description = "Returns the meeting, its source slot, organizer, and participants.")
     public MeetingResponse get(@PathVariable Long meetingId) {
         return meetingService.get(meetingId);
     }
 
     @PatchMapping("/meetings/{meetingId}")
-    @Operation(summary = "Update meeting details")
+    @Operation(summary = "Update meeting details",
+            description = "Provide a title and/or description. Meeting timing and participants cannot be changed after booking.")
     public MeetingResponse update(@PathVariable Long meetingId,
                                   @Valid @RequestBody MeetingUpdateRequest request) {
         return meetingService.update(meetingId, request);
     }
 
     @DeleteMapping("/meetings/{meetingId}")
-    @Operation(summary = "Cancel a meeting and free its slot")
+    @Operation(summary = "Cancel a meeting and free its slot",
+            description = "Deletes the meeting and changes its source slot back to FREE.")
     public ResponseEntity<Void> cancel(@PathVariable Long meetingId) {
         meetingService.cancel(meetingId);
         return ResponseEntity.noContent().build();

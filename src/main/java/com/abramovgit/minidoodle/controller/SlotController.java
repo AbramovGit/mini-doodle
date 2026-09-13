@@ -37,14 +37,17 @@ public class SlotController {
     private final SlotService slotService;
 
     @PostMapping
-    @Operation(summary = "Create one or more free slots")
+    @Operation(summary = "Create one or more free slots",
+            description = "All ranges use UTC, must be at least 15 minutes, and cannot overlap existing slots for the user.")
     public ResponseEntity<List<SlotResponse>> create(@PathVariable Long userId,
                                                       @Valid @RequestBody CreateSlotsRequest request) {
         return ResponseEntity.ok(slotService.create(userId, request));
     }
 
     @PatchMapping("/{slotId}")
-    @Operation(summary = "Update a slot time range")
+    @Operation(summary = "Update a slot time range",
+            description = "Provide at least one field. Updated ranges must remain valid and non-overlapping. "
+                    + "A BUSY slot cannot be changed to FREE; cancel its meeting instead.")
     public SlotResponse update(@PathVariable Long userId,
                                @PathVariable Long slotId,
                                @Valid @RequestBody UpdateSlotRequest request) {
@@ -52,14 +55,17 @@ public class SlotController {
     }
 
     @DeleteMapping("/{slotId}")
-    @Operation(summary = "Delete a free slot")
+    @Operation(summary = "Delete a free slot",
+            description = "Only FREE slots can be deleted. Cancel the associated meeting before deleting a BUSY slot.")
     public ResponseEntity<Void> delete(@PathVariable Long userId, @PathVariable Long slotId) {
         slotService.delete(userId, slotId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
-    @Operation(summary = "List slots intersecting a time range")
+    @Operation(summary = "List slots intersecting a time range",
+            description = "Returns slots where startTime < to and endTime > from. "
+                    + "Optionally filter by FREE or BUSY status. Pagination starts at page 0.")
     public Page<SlotResponse> list(@PathVariable Long userId,
                                    @RequestParam Instant from,
                                    @RequestParam Instant to,

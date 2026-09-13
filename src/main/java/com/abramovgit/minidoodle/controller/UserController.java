@@ -27,7 +27,8 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    @Operation(summary = "Create a user and their implicit calendar")
+    @Operation(summary = "Create a user and their implicit calendar",
+            description = "Use the returned user ID to manage slots. The calendar is internal and has no REST endpoint.")
     public ResponseEntity<UserResponse> create(@Valid @RequestBody UserCreateRequest request,
                                                UriComponentsBuilder uriBuilder) {
         UserResponse response = userService.create(request);
@@ -36,7 +37,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    @Operation(summary = "Get a user")
+    @Operation(summary = "Get a user", description = "Returns 404 when the user ID does not exist.")
     public UserResponse get(@PathVariable Long userId) {
         return userService.get(userId);
     }
