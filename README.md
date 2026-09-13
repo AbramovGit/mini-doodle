@@ -12,7 +12,7 @@ Backend simulation of a meeting scheduling platform inspired by Doodle.
 ## Planned technology
 
 - Java 21 and Spring Boot 3
-- PostgreSQL with Flyway migrations
+- H2 with Flyway migrations
 - Spring Data JPA and Bean Validation
 - Docker Compose for local development
 - OpenAPI documentation and Actuator metrics
@@ -27,7 +27,33 @@ All persisted timestamps will use UTC `Instant` values. A user's timezone is
 kept for display purposes only. Participants are registered users in the first
 version, and each slot can produce exactly one meeting.
 
+H2 is used as the application database at this stage. This is a deliberate
+deviation from the target PostgreSQL deployment to keep local development
+self-contained; the in-memory database is reset whenever the application
+restarts.
+
 ## Local development
 
-Run instructions and API examples will be added when the application and
-`docker-compose.yml` are introduced.
+Start the application with:
+
+```bash
+docker compose up --build
+```
+
+The service is available at `http://localhost:8080`. At this scaffold stage,
+health and metrics are exposed at `/actuator/health` and
+`/actuator/prometheus`; business endpoints will be added in later milestones.
+
+The user and slot APIs are now available:
+
+```bash
+curl -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Ada Lovelace","email":"ada@example.com","timezone":"UTC"}'
+
+curl -X POST http://localhost:8080/api/users/USER_ID/slots \
+  -H "Content-Type: application/json" \
+  -d '{"slots":[{"startTime":"2026-09-14T09:00:00Z","endTime":"2026-09-14T10:00:00Z"}]}'
+
+curl "http://localhost:8080/api/users/USER_ID/slots?from=2026-09-14T00:00:00Z&to=2026-09-15T00:00:00Z"
+```

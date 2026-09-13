@@ -15,6 +15,10 @@ spring:
     console:
       enabled: true
 
+app:
+  slot:
+    minimum-duration: PT15M
+
 management:
   endpoints:
     web:
