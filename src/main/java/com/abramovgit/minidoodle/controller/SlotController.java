@@ -8,6 +8,7 @@ import com.abramovgit.minidoodle.service.SlotService;
 import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -63,6 +64,7 @@ public class SlotController {
                                    @RequestParam Instant from,
                                    @RequestParam Instant to,
                                    @RequestParam(required = false) SlotStatus status,
+                                   @ParameterObject
                                    @PageableDefault(sort = "startTime", direction = Sort.Direction.ASC) Pageable pageable) {
         return slotService.list(userId, from, to, status, pageable);
     }

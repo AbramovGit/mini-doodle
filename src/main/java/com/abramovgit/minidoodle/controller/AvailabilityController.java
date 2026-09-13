@@ -2,6 +2,7 @@ package com.abramovgit.minidoodle.controller;
 
 import com.abramovgit.minidoodle.api.AvailabilityResponse;
 import com.abramovgit.minidoodle.service.AvailabilityService;
+import org.springdoc.core.annotations.ParameterObject;
 import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,6 +30,7 @@ public class AvailabilityController {
     public AvailabilityResponse get(@PathVariable Long userId,
                                     @RequestParam Instant from,
                                     @RequestParam Instant to,
+                                    @ParameterObject
                                     @PageableDefault(size = 50, sort = "startTime", direction = Sort.Direction.ASC)
                                     Pageable pageable) {
         return availabilityService.get(userId, from, to, pageable);

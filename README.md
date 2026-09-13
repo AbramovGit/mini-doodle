@@ -5,8 +5,8 @@ slots, booking meetings, and querying free/busy availability.
 
 ## Running locally
 
-The project currently uses an in-memory H2 database, so the only Compose
-service is the application:
+Docker Compose starts the Spring Boot application, PostgreSQL, and a standalone
+Swagger UI:
 
 ```bash
 docker compose up --build
@@ -18,14 +18,25 @@ The application is available at `http://localhost:8080`. Stop it with:
 docker compose down
 ```
 
+PostgreSQL data is retained in the `postgres-data` Docker volume. Use
+`docker compose down -v` to remove it. H2 remains available only on the test
+classpath for `mvn test`.
+
 Useful endpoints:
 
-- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- Swagger UI: `http://localhost:8081`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 - Health: `http://localhost:8080/actuator/health`
 - Prometheus metrics: `http://localhost:8080/actuator/prometheus`
 
 ## API usage
+
+Use Swagger UI at `http://localhost:8081` to explore and exercise the API.
+The UI is a separate deployable configured with the host-facing OpenAPI URL.
+For a different deployment hostname, set both `SWAGGER_OPENAPI_URL` and
+`SWAGGER_UI_ORIGIN` before running Compose.
+Paginated endpoints accept `page`, `size`, and `sort` query parameters; page
+numbering starts at zero.
 
 Create a user. Creating a user also creates their implicit domain calendar:
 
@@ -86,15 +97,19 @@ resource or path segment.
 - Slot overlap and minimum-duration validation are enforced in the service
   layer. `Slot` uses optimistic locking so concurrent booking attempts return
   `409 Conflict` for the losing request.
-- H2 is used instead of the target PostgreSQL datastore at the user's request.
-  This keeps the Compose setup self-contained, but data is reset when the
-  application restarts. The schema remains managed by Flyway.
-- The availability endpoint is paginated and clips slot windows to the
-  requested range, merging adjacent windows with the same status.
+- Docker Compose uses PostgreSQL with a named volume and waits for its health
+  check before starting the application. Flyway manages the schema.
+- Swagger UI runs as a separate deployable and is configured through
+  `SWAGGER_OPENAPI_URL`. CORS permits its configured origin through
+  `SWAGGER_UI_ORIGIN`.
+- H2 is retained only for local test runs.
+- The availability endpoint aggregates the full requested range before
+  paginating result windows. Ranges outside a user's declared free slots are
+  returned as `BUSY`, and adjacent windows with the same status are merged.
 
 ## Deliberately out of scope
 
-- PostgreSQL deployment and PostgreSQL-specific exclusion constraints
+- PostgreSQL-specific exclusion constraints
 - Multi-slot meetings
 - External or email-only participants
 - Cross-user availability intersection
@@ -107,7 +122,7 @@ The cross-user availability endpoint
 
 - Java 21 and Spring Boot 3
 - Spring Web, Spring Data JPA, Bean Validation, and Lombok
-- H2 and Flyway
+- PostgreSQL, H2 for tests, and Flyway
 - MapStruct dependency reserved for DTO mapping as the API grows
 - springdoc-openapi, Spring Boot Actuator, Micrometer, and Prometheus
 - Maven and Docker Compose
