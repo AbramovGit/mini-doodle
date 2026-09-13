@@ -5,11 +5,13 @@ import com.abramovgit.minidoodle.api.AvailabilityWindow;
 import com.abramovgit.minidoodle.domain.Calendar;
 import com.abramovgit.minidoodle.domain.Slot;
 import com.abramovgit.minidoodle.domain.SlotStatus;
+import com.abramovgit.minidoodle.repository.AvailabilityWindowProjection;
 import com.abramovgit.minidoodle.repository.CalendarRepository;
 import com.abramovgit.minidoodle.repository.SlotRepository;
 import com.abramovgit.minidoodle.exception.InvalidSlotException;
 import com.abramovgit.minidoodle.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,9 @@ public class AvailabilityService {
     private final CalendarRepository calendarRepository;
     private final SlotRepository slotRepository;
 
+    @Value("${app.availability.database-aggregation:false}")
+    private boolean databaseAggregation;
+
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = "availability")
     public AvailabilityResponse get(Long userId, Instant from, Instant to, Pageable pageable) {
@@ -35,9 +40,31 @@ public class AvailabilityService {
             throw new InvalidSlotException("from must be before to");
         }
 
+        if (databaseAggregation) {
+            return aggregateInDatabase(calendar.getId(), from, to, pageable);
+        }
         List<Slot> slots = slotRepository.findAllOverlapping(calendar.getId(), from, to);
         List<AvailabilityWindow> windows = aggregate(slots, from, to);
         return toResponse(windows, slots.size(), pageable);
+    }
+
+    private AvailabilityResponse aggregateInDatabase(Long calendarId, Instant from, Instant to, Pageable pageable) {
+        int pageSize = pageable.isPaged() ? pageable.getPageSize() : Integer.MAX_VALUE;
+        long offset = pageable.isPaged() ? pageable.getOffset() : 0;
+        List<AvailabilityWindow> windows = slotRepository
+                .findAggregatedAvailability(calendarId, from, to, pageSize, offset)
+                .stream()
+                .map(this::toAvailabilityWindow)
+                .toList();
+        long totalSlots = slotRepository.countOverlapping(calendarId, from, to);
+        long totalWindows = slotRepository.countAggregatedAvailability(calendarId, from, to);
+        int page = pageable.isPaged() ? pageable.getPageNumber() : 0;
+        return new AvailabilityResponse(windows, page, pageSize, totalSlots, totalWindows);
+    }
+
+    private AvailabilityWindow toAvailabilityWindow(AvailabilityWindowProjection projection) {
+        return new AvailabilityWindow(projection.getStartTime(), projection.getEndTime(),
+                SlotStatus.valueOf(projection.getStatus()));
     }
 
     private List<AvailabilityWindow> aggregate(List<Slot> slots, Instant from, Instant to) {

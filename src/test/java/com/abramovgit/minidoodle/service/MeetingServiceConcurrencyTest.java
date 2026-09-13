@@ -6,6 +6,7 @@ import com.abramovgit.minidoodle.api.SlotRequest;
 import com.abramovgit.minidoodle.api.SlotResponse;
 import com.abramovgit.minidoodle.api.UserCreateRequest;
 import com.abramovgit.minidoodle.api.UserResponse;
+import com.abramovgit.minidoodle.domain.SlotStatus;
 import com.abramovgit.minidoodle.exception.ConflictException;
 import com.abramovgit.minidoodle.repository.CalendarRepository;
 import com.abramovgit.minidoodle.repository.MeetingRepository;
@@ -75,6 +76,8 @@ class MeetingServiceConcurrencyTest {
             start.countDown();
 
             assertEquals(1, (first.get() ? 1 : 0) + (second.get() ? 1 : 0));
+            assertEquals(1, meetingRepository.count());
+            assertEquals(SlotStatus.BUSY, slotRepository.findById(slot.id()).orElseThrow().getStatus());
         } finally {
             executor.shutdownNow();
         }

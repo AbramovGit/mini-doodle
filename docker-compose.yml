@@ -11,6 +11,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: mini_doodle
       SPRING_FLYWAY_LOCATIONS: classpath:db/migration/common,classpath:db/migration/postgresql
       APP_CORS_ALLOWED_ORIGINS: ${SWAGGER_UI_ORIGIN:-http://localhost:8081}
+      APP_AVAILABILITY_DATABASE_AGGREGATION: "true"
     depends_on:
       postgres:
         condition: service_healthy

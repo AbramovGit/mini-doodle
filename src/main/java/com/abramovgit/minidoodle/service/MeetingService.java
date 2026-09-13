@@ -16,6 +16,7 @@ import com.abramovgit.minidoodle.repository.SlotRepository;
 import com.abramovgit.minidoodle.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.dao.DataIntegrityViolationException;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
@@ -47,11 +48,6 @@ public class MeetingService {
 
         List<User> participants = getParticipants(request.participantIds());
         slot.setStatus(SlotStatus.BUSY);
-        try {
-            slotRepository.saveAndFlush(slot);
-        } catch (OptimisticLockingFailureException exception) {
-            throw new ConflictException("Slot was booked by another request");
-        }
 
         Meeting meeting = new Meeting();
         meeting.setSlot(slot);
@@ -65,7 +61,12 @@ public class MeetingService {
             participant.setUser(participantUser);
             meeting.getParticipants().add(participant);
         }
-        Meeting savedMeeting = meetingRepository.save(meeting);
+        Meeting savedMeeting;
+        try {
+            savedMeeting = meetingRepository.saveAndFlush(meeting);
+        } catch (OptimisticLockingFailureException | DataIntegrityViolationException exception) {
+            throw new ConflictException("Slot was booked by another request");
+        }
         meterRegistry.counter("mini_doodle_meetings_booked").increment();
         return toResponse(savedMeeting);
     }
